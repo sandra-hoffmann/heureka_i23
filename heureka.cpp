@@ -6,7 +6,18 @@
 #include "parser.h"
 #include "solver.h"
 #include "test.h"
+#include <csignal>
+#include <cstdio>
+#include <unistd.h>
 
+extern "C" void on_abort_signal(int sig) {
+    char buf[160];
+    int len = snprintf(buf, sizeof buf,
+                       "ABORTED (signal %d) ; decisions: %lld ; backtracks: %lld\n",
+                       sig, stats::decisions, stats::backtracks);
+    write(STDERR_FILENO, buf, len);
+    _exit(128 + sig);
+}
 
 namespace {
   using namespace std::chrono;
@@ -31,6 +42,8 @@ namespace {
 
 
 int main(int argcnt, char ** args) {
+    std::signal(SIGALRM, on_abort_signal);
+    std::signal(SIGINT, on_abort_signal);
   if (argcnt == 1) {
     std::cout << "heureka 0.2" << std::endl
       << "Nils Geilen <geilenn@uni-koblenz.de>" << std::endl
@@ -78,6 +91,8 @@ int main(int argcnt, char ** args) {
         format = "apx";
       else if (ending == ".tgf")
         format = "tgf";
+      else if (path.substr(path.size()-3) == ".af")
+          format = "i23";
     }
 
     /**
@@ -99,11 +114,13 @@ int main(int argcnt, char ** args) {
       return 0;
     }
 
-    if (format == "apx") {
-      parseAPX(aaf, file);
-    } else {
-      parseTGF(aaf, file);
-    }
+      if (format == "apx") {
+          parseAPX(aaf, file);
+      } else if (format == "i23") {
+          parseI23(aaf, file);
+      } else {
+          parseTGF(aaf, file);
+      }
     file.close();
 
     if (param_debug_options.size()) {
@@ -213,8 +230,11 @@ int main(int argcnt, char ** args) {
         return 0;
     }
 
-    if (param_debug_options.size())
-      clock.stop("algorithm");
+      if (param_debug_options.size()) {
+          clock.stop("algorithm");
+          std::cerr << "decisions: " << stats::decisions
+                    << " ; backtracks: " << stats::backtracks << std::endl;
+      }
 
     delete solver;
     delete heuristic;

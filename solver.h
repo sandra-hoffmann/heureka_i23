@@ -82,3 +82,8 @@ public:
   auto enum_exts (const AttackRelation &ar, int max_cnt = 0) -> std::vector<std::vector<int>> override;
   bool justify (const AttackRelation &ar, arg_t arg, bool sceptical) override;
 };
+
+namespace stats {
+    extern long long decisions;
+    extern long long backtracks;
+}

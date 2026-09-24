@@ -1,3 +1,2 @@
 #!/bin/bash
-
-g++ --std=c++11 -O3 -I /usr/include/eigen3 -o heureka *.cpp
+g++ --std=c++14 -O3 -I $(brew --prefix eigen)/include/eigen3 -o heureka *.cpp

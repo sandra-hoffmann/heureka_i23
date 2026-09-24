@@ -54,3 +54,31 @@ void parseAPX(AAF&aaf, std::istream &file) {
     }
   }
 }
+
+void parseI23(AAF&aaf, std::istream &file) {
+    std::unordered_map<std::string, Argument> argids;
+
+    // 1. header: "p af n"
+    std::string p, af;
+    int n;
+    file >> p >> af >> n;
+
+    // 2. arguments 1..n, 0-based ids like the other parsers
+    int id = -1;
+    for (int k = 1; k <= n; k++) {
+        std::string label = std::to_string(k);
+        Argument arg = {++id, label};
+        argids[label] = arg;
+        aaf.args.push_back(arg);
+    }
+
+    // 3. attacks: pairs "a b" (same as parseTGF's attack loop)
+    while ( ! file.eof()) {
+        std::string a, b;
+        file >> a >> b;
+        if (a=="" || b=="")
+            break;
+        Attack att = {argids[a], argids[b]};
+        aaf.atts.push_back(att);
+    }
+}

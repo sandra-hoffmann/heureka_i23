@@ -37,7 +37,8 @@ void AAF::todot(std::ostream &str) {
 }
 
 std::ostream& operator <<(std::ostream& stream, const Argument& arg) {
-  stream << arg.label;
+    stream << arg.label;
+    return stream;
 }
 
 bool operator==(const Argument &x, const Argument &y)  {
@@ -50,6 +51,7 @@ bool operator!=(const Argument &x, const Argument &y) {
 
 std::ostream& operator <<(std::ostream& stream, const Attack& att) {
   stream << att.active << " -> " << att.passive;
+  return stream;
 }
 
 bool operator==(const Attack &x, const Attack &y)  {
@@ -67,4 +69,5 @@ std::ostream& operator <<(std::ostream& stream, const AAF& aaf) {
   for (auto &att : aaf.atts)
     stream << att << ", ";
   stream <<"\n";
+  return stream;
 }
