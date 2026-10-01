@@ -98,11 +98,13 @@ Heuristic * parseHeuristic (AAF&aaf, AttackRelation&ar, std::stringstream&source
 
 namespace {
     bool tuple_comp_desc (const std::pair<int,rational_t>& a, const std::pair<int,rational_t>& b) {
-       return a.second > b.second;
+        /* deterministic tiebreak to ensure heuristic order is consistent */
+        return a.second > b.second || (a.second == b.second && a.first < b.first);
     }
 
     bool tuple_comp_asc (const std::pair<int,rational_t>& a, const std::pair<int,rational_t>& b) {
-       return a.second < b.second;
+        /* deterministic tiebreak to ensure heuristic order is consistent - mirrors desc order */
+       return a.second < b.second || (a.second == b.second && a.first > b.first);
     }
 }
 
