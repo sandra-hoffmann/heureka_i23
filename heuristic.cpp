@@ -5,31 +5,45 @@
 #include <algorithm>
 
 
+namespace {
+    // kept next to the parser so a new term is added in one place
+    const char * const KNOWN_TERMS =
+            "operators: + - * / ^ ; terms: scc deg indeg outdeg dynindeg aggror "
+            "dynindegrat aggrorrat dynoutdeg defor path outpath inpath pm extdegrat "
+            "ceig cb exp dynexp exps ; or a numeric constant";
+}
+
 Heuristic * parseHeuristic (AAF&aaf, AttackRelation&ar, std::stringstream&source) {
-  std::string name;
-  source >> name;
-  if (name == "+" || name == "-" || name == "*" || name == "/" || name == "^") {
-    auto * a = parseHeuristic(aaf, ar, source),
-      * b = parseHeuristic(aaf, ar, source);
-  /*  if (b -> is_dynamic() || a -> is_const()) {
-      auto * temp = a;
-      a = b;
-      b = temp;
-    }*/
-    a -> zip_in_place (b, name[0]);
-    if (b -> is_dynamic() && a -> is_dynamic())
-      std::cerr << "Fail: cannot combine two dynamic heuristics"<<std::endl;
-    else if (b -> is_dynamic()) {
-      auto * temp = a;
-      a = b;
-      b = temp;
-      const ConstHeuristic zero(0, ar.arg_cnt);
-      a -> zip_in_place(&zero, '*');
-      a -> zip_in_place(b, '+');
+    std::string name;
+    if (!(source >> name)) {
+        std::cerr << "Fail: heuristic ended early, an operand is missing" << std::endl;
+        return nullptr;
     }
-    delete b;
-    return a;
-  } else if (name == "scc") {
+    if (name == "+" || name == "-" || name == "*" || name == "/" || name == "^") {
+        auto * a = parseHeuristic(aaf, ar, source),
+                * b = parseHeuristic(aaf, ar, source);
+        // a failed operand must not be dereferenced; without this check an unknown
+        // term two levels down crashes the process instead of reporting itself
+        if (a == nullptr || b == nullptr) {
+            delete a;
+            delete b;
+            std::cerr << "Fail: operator '" << name << "' is missing a valid operand" << std::endl;
+            return nullptr;
+        }
+        a -> zip_in_place (b, name[0]);
+        if (b -> is_dynamic() && a -> is_dynamic())
+            std::cerr << "Fail: cannot combine two dynamic heuristics"<<std::endl;
+        else if (b -> is_dynamic()) {
+            auto * temp = a;
+            a = b;
+            b = temp;
+            const ConstHeuristic zero(0, ar.arg_cnt);
+            a -> zip_in_place(&zero, '*');
+            a -> zip_in_place(b, '+');
+        }
+        delete b;
+        return a;
+    } else if (name == "scc") {
     return new SCCHeuristic {ar};
   } else if (name == "deg") {
     float indeg_weight, outdeg_weight;
@@ -84,14 +98,16 @@ Heuristic * parseHeuristic (AAF&aaf, AttackRelation&ar, std::stringstream&source
     else std::cerr << "Fail: Heuristic expects different params: " << name <<std::endl;
   } else if (name == "exps") {
     return  getExponentialHeuristic (aaf);
-  } else {
-    std::stringstream str (name);
-    rational_t const_val;
-    if (str >> const_val) {
-      return new ConstHeuristic(const_val, ar.arg_cnt);
+    } else {
+        std::stringstream str (name);
+        rational_t const_val;
+        if (str >> const_val) {
+            return new ConstHeuristic(const_val, ar.arg_cnt);
+        }
+        std::cerr << "Fail: unknown heuristic term '" << name << "'. Expected "
+                  << KNOWN_TERMS << std::endl;
     }
-  }
-  return nullptr;
+    return nullptr;
 }
 
 
