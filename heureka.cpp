@@ -144,23 +144,38 @@ int main(int argcnt, char ** args) {
              * no heuristics necessary
              */
         } else {
+            std::string formula;
             if (param_heuristic.size()) {
-                std::stringstream source(param_heuristic);
-                heuristic = parseHeuristic(aaf, ar, source);
+                formula = param_heuristic;
             } else {
                 /**
                  * standard heurstic (0.25*A)^5
                  */
                 if (semantics == "ST") {
-                    std::stringstream strstr ("+ * scc 1000 + / + outdeg 1 + indeg 1 /  +  outpath inpath 1000");
-                    heuristic = parseHeuristic (aaf, ar, strstr);
+                    formula = "+ * scc 1000 + / + outdeg 1 + indeg 1 /  +  outpath inpath 1000";
                 } else {
-                    std::stringstream strstr ("+ * scc 1000 * -1 * outpath inpath");
-                    heuristic = parseHeuristic (aaf, ar, strstr);
+                    formula = "+ * scc 1000 * -1 * outpath inpath";
                 }
             }
+
+            std::stringstream strstr(formula);
+            heuristic = parseHeuristic(aaf, ar, strstr);
+
             if (! heuristic) {
                 std::cerr << "Fail: heuristic could not be parsed"<< std::endl;
+                return 1;
+            }
+            // the parser stops as soon as one expression is complete and leaves the
+            // rest of the input untouched, so a leftover token means the heuristic
+            // that was measured is not the one that was written
+            std::string rest, tail;
+            if (strstr >> rest) {
+                std::getline(strstr, tail);
+                std::cerr << "Fail: the expression was already complete before '"
+                          << rest << tail << "'. Every operator takes exactly two operands, "
+                          << "so n operands need n-1 operators; leftover tokens usually mean "
+                          << "one operator too few." << std::endl;
+                delete heuristic;
                 return 1;
             }
             if (param_debug_options == "2") {
