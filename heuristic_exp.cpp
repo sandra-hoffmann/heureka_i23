@@ -44,6 +44,7 @@ DenseExponentialHeuristic::DenseExponentialHeuristic (AAF &aaf, int window_size)
   typedef float entry_t;
   const int n = aaf.args.size();
   MatrixXf a(n,n);
+  a.setZero();
   for(auto&att:aaf.atts) {
     a(att.active.id, att.passive.id) = -1;
   }

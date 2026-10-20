@@ -22,4 +22,4 @@ add_executable(heureka
 
 target_include_directories(heureka PRIVATE /opt/homebrew/opt/eigen/include/eigen3)
 
-target_compile_options(heureka PRIVATE -Wall -Wextra -Wreturn-type)
+target_compile_options(heureka PRIVATE -Wall -Wextra -Wreturn-type -gdwarf-4)
