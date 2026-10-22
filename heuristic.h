@@ -84,7 +84,6 @@ Heuristic * parseHeuristic (AAF&aaf, AttackRelation&ar, std::stringstream&source
 class ConstHeuristic: public Heuristic {
 public:
   ConstHeuristic(rational_t val, int size) : Heuristic(false, true) { for(int i = 0; i< size; i++)order.push_back(std::pair<arg_t,rational_t>(i,val));}
-  auto get(int from, const HeuristicAlgorithm &algo) -> int override {return from;}
 };
 
 /**
