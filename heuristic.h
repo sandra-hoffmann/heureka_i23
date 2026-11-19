@@ -56,6 +56,7 @@ protected:
    */
   std::vector<std::pair<int,rational_t>> order;
 public:
+    const std::vector<std::pair<int,rational_t>> & get_order() const { return order; }
   Heuristic(bool dyn = false, bool con = false) : _dynamic(dyn), _const(con) {}
   virtual int get(int from, const HeuristicAlgorithm &algo) {return order[from].first;}
   void zip_in_place(const Heuristic* heuristic, char op);

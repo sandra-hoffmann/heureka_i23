@@ -10,6 +10,8 @@
 #include <cstdio>
 #include <unistd.h>
 
+#include <cmath>
+
 extern "C" void on_abort_signal(int sig) {
     char buf[160];
     int len = snprintf(buf, sizeof buf,
@@ -183,6 +185,19 @@ int main(int argcnt, char ** args) {
                 std::cerr << '[' << heuristic->get_min_val() <<", "<<heuristic->get_max_val()<<']'<<std::endl;
             }
             heuristic->sort();
+            if (param_debug_options == "order") {
+                for (const auto &p : heuristic->get_order()) {
+                    if (!std::isfinite(p.second)) {
+                        std::cerr << "Fail: non-finite heuristic value" << std::endl;
+                        delete heuristic;
+                        return 2;
+                    }
+                }
+                for (const auto &p : heuristic->get_order())
+                    std::cout << p.first << '\n';
+                delete heuristic;
+                return 0;
+            }
         }
 
         if (semantics == "GR" || semantics == "CO" && (task == "DS" || task == "SE")){
