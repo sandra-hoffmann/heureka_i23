@@ -159,6 +159,8 @@ namespace {
          * @return         false if conflicts occured
          */
         bool set_out (arg_t arg, int index = indices::BACKTRACK) {
+            if (labels[arg] == IN)
+                return false;
             if (labels[arg] & BLANK) {
                 labels[arg] = labels::OUT;
                 //  out_cnt ++;
